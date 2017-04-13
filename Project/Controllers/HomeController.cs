@@ -24,15 +24,16 @@ namespace Project.Controllers
             return View();
         }
         [ActionName("Search")]
-        public String getSynonyms(String Word)
+        public ActionResult getSynonyms(String Word)
         {
+            ViewData["Word"] = Word;
             //List<Synonym> values = new List<Synonym>();
             var data = getWebData(apiDomain + string.Format(apiQuery, Word));
             var dataObject = parseWebString(data);
             var items = parseDataObject(dataObject);
 
-            string outputValue = string.Join<ThesaurusItem>(",<br />", items.ToArray());
-            return outputValue;
+            //string outputValue = string.Join<ThesaurusItem>(",<br />", items.ToArray());
+            return View(items);
         }
 
         [NonAction]

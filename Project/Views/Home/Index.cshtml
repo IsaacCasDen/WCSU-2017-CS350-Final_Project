@@ -1,7 +1,26 @@
 ﻿
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = "Wide Word Web";
 }
 
-<h2>Index</h2>
-
+<div>
+    <label>Search for Connections</label><br />
+    <input id="inputSearch" type="search" /><br />
+    <button id="buttonRunSearch">Go</button>
+</div>
+<script type="text/javascript">
+    window.onload = function () {
+        var button = document.getElementById('buttonRunSearch');
+        if (button) {
+            button.onclick = runSearch;
+        }
+    }
+    function runSearch() {
+        var search = document.getElementById('inputSearch');
+        if (search) {
+            var term = search.value;
+            var url = '@Url.Action("Search","Home")?Word=' + term;
+            location.href = url;
+        }
+    }
+</script>

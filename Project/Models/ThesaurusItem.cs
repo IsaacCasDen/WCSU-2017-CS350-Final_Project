@@ -10,9 +10,9 @@ namespace Project.Models
     {
         private static TextInfo textInfo = new CultureInfo("en-US", false).TextInfo;
 
-        SpeechPart SpeechPart { get; set; }
-        WordRel WordRelation { get; set; }
-        String Word { get; set; }
+        public SpeechPart SpeechPart { get; protected set; }
+        public WordRel WordRelation { get; protected set; }
+        public String Word { get; protected set; }
 
         public ThesaurusItem(String word,SpeechPart speechPart, WordRel wordRel)
         {
