@@ -3,6 +3,7 @@ using Project.Models;
 using Project.Models.JsonModels;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Configuration;
 using System.IO;
 using System.Linq;
@@ -19,8 +20,28 @@ namespace Project.Controllers
         const String apiDomain = "http://words.bighugelabs.com/";
         String apiQuery { get { return "api/2/" + ConfigurationManager.AppSettings["APIKey"] + "/{0}/json"; } }
 
-        static Dictionary<String,Entry> Entries { get { return _Entries; } }
-        static Dictionary<String, Entry> _Entries = new Dictionary<string, Entry>();
+        static OrderedDictionary Entries { get { return _Entries; } }
+        static OrderedDictionary _Entries = new OrderedDictionary();
+
+        [NonAction]
+        public String getRecentWords()
+        {
+            String value="[{0}]";
+            String values = "";
+            Object[] keys = new object[Entries.Keys.Count];
+            Entries.Keys.CopyTo(keys, 0);
+
+            for (int i= keys.Length- 10;i<keys.Length;i++)
+            {
+                if (i>=0&&i<keys.Length)
+                {
+                    if (values.Length>0) { values += ","; }
+                    values += String.Format("'{0}'", keys[i]);
+                }
+            }
+
+            return String.Format(value, values);
+        }
 
         [NonAction]
         void addItems(List<Entry> Items)
@@ -38,12 +59,12 @@ namespace Project.Controllers
         {
             if (Item!=null)
             {
-                if(!Entries.ContainsKey(Item.Item.Word))
+                if(!Entries.Contains(Item.Item.Word))
                 {
                     Entries.Add(Item.Item.Word, Item);
                 } else
                 {
-                    Entries[Item.Item.Word].Merge(Item);
+                    ((Entry)Entries[Item.Item.Word]).Merge(Item);
                 }
             }
         }
@@ -51,6 +72,7 @@ namespace Project.Controllers
         // GET: Home
         public ActionResult Index()
         {
+            ViewData["Recent"] = getRecentWords();
             return View();
         }
 
@@ -67,9 +89,9 @@ namespace Project.Controllers
         {
             String value = "{ }";
         
-            if (Entries.ContainsKey(Word))
+            if (Entries.Contains(Word))
             {
-                value = Entries[Word].ToJson();
+                value = ((Entry)Entries[Word]).ToJson();
             } else
             {
                 Entry entry = null;

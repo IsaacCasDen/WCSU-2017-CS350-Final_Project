@@ -3,24 +3,103 @@
     ViewBag.Title = "Wide Word Web";
 }
 
-<div id="divSearch">
-    <h3><label class="label label-primary">Search for Connections</label></h3>
-    <input id="inputSearch" type="search" class="input-lg" onkeypress= "return enterRunSearch()" />
-    <button id="buttonRunSearch" class="btn btn-default">Go</button>
+<div id="interface">
+    <div id="divSearch">
+        <h3><label class="label label-primary">Search The Saurus</label></h3>
+        <input id="inputSearch" type="search" class="input-lg" onkeypress="return enterRunSearch()" />
+        <button id="buttonRunSearch" class="btn btn-default">Go</button>
+    </div>
+    <div id="recentSearches">
+
+    </div>
 </div>
+<style>
+    #interface {
+        
+    }
+    #divSearch {
+        margin: 25%;
+        float: none;
+        display: inline-block;
+    }
+    #recentSearches {
+        margin-top: 36px;
+        border-color: black;
+        border-style: solid;
+        border-width: thin;
+        display: inline-block;
+        float: right;
+        width: 225px;
+        overflow-y: auto;
+    }
+    .left {
+        float:left;
+    }
+    ol li {
+        text-indent:12px;
+        min-height:48px;
+    }
+</style>
 <script type="text/javascript">
+    var recent = @Html.Raw(ViewData["Recent"]);
+
+    function refreshRecent() {
+        //debugger
+        if (recent && recent.length) {
+            document.getElementById("recentSearches").innerHTML = "";
+            var divB = document.createElement('div');
+            divB.classList.add('panel');
+            divB.classList.add('panel-default');
+            var p = document.createElement('p');
+            p.innerHTML = "Recent Searches"
+            p.classList.add('list-group-item');
+            divB.appendChild(p);
+            var ol = document.createElement('ol');
+            ol.classList.add('list-group');
+            for (i = 0; i < recent.length; i++) {
+                var word = recent[i];
+                var li = document.createElement('li');
+                var input = document.createElement('input');
+                input.setAttribute("type", "image");
+                input.setAttribute("src", '@Url.Content("~/Content/images/glass_icon.png")');
+                input.classList.add('left');
+                input.word = word;
+                input.onclick = function (word) { quickWord(word); };
+                //input.onclick = searchInputWord;
+                li.innerHTML = word;
+                li.classList.add('list-group-item');
+                li.classList.add('list-group-item-warning');
+                li.appendChild(input);
+                ol.appendChild(li);
+            }
+            divB.appendChild(ol);
+            document.getElementById('recentSearches').appendChild(divB);
+        }
+    }
+
     window.onload = function () {
+        //debugger
         var button = document.getElementById('buttonRunSearch');
         if (button) {
             button.onclick = runSearch;
         }
+        refreshRecent();
+    }
+    function quickWord(input) {
+        //debugger
+        if (input && input.target && input.target.word) {
+            searchWord(input.target.word);
+        }
+    }
+    function searchWord(term) {
+        var url = '@Url.Action("Search","Home")?Word=' + term;
+        location.href = url;
     }
     function runSearch() {
         var search = document.getElementById('inputSearch');
         if (search) {
             var term = search.value;
-            var url = '@Url.Action("Search","Home")?Word=' + term;
-            location.href = url;
+            searchWord(term);
         }
     }
     function enterRunSearch() {
