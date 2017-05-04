@@ -1,6 +1,6 @@
 ﻿body {
     padding-top: 50px;
-    padding-bottom: 20px;
+    padding-bottom: 6px;
     margin-left:0;
     margin-right:0;
     padding-left:0;
@@ -15,7 +15,6 @@
 #footer {
     clear: both;
     position: relative;
-    z-index: 10;
     height: 3em;
     margin-top: -3em;
 }

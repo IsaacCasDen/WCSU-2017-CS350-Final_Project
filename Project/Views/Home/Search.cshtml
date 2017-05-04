@@ -33,10 +33,10 @@
 
     #display {
         display:inline-block;
-        height: 875px;
+        height: 868px;
         width:1375px;
-        margin-top: 12px;
-        padding: 12px;
+        margin-top: 6px;
+        padding: 6px;
     }
 
     #output {
@@ -52,6 +52,7 @@
     }
 
     #history {
+        margin-bottom:6px;
         margin-right:12px;
         border-color: black;
         border-style: solid;
@@ -396,6 +397,7 @@
                     return "path-" + i;
                 })
                 .attr("d", arc)
+                .attr("z-index",0)
                 .style("fill", function (d) {
                     d.colour = color((d.children ? d : d.parent).name); return d.colour;
                 })
@@ -430,44 +432,60 @@
                     return d.depth ? d.name : d.name ? d.name : "";
                 });
             function click(d) {
-                //debugger
-                currentSelect = d;
-                path.transition()
-                    .duration(duration)
-                    .attrTween("d", arcTween(d));
-                // Somewhat of a hack as we rely on arcTween updating the scales.
-                text.style("svgibility", function (e) {
-                    return isParentOf(d, e) ? null : d3.select(this).style("svgibility");
-                })
-                    .transition()
-                    .duration(duration)
-                    .attrTween("text-anchor", function (d) {
-                        return function () {
-                            return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
-                        };
+                debugger
+                if (d) {
+                    if (d.visible == undefined) {
+                        d.visible = 1;
+                    } else {
+                        
+                    }
+                }
+                if (d&&d.visible&&d.visible===1) {
+                    currentSelect = d;
+                    path.transition()
+                        .duration(duration)
+                        .attrTween("d", arcTween(d));
+                    // Somewhat of a hack as we rely on arcTween updating the scales.
+                    text.style("svgibility", function (e) {
+                        return isParentOf(d, e) ? null : d3.select(this).style("svgibility");
                     })
-                    .attrTween("transform", function (d) {
-                        return function () {
-                            var value;
-                            var angle=0;
-                            var modY=1;
-                            if (d.depth) {
-                                angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90
-                                modY = getMod(d, true);
+                        .transition()
+                        .duration(duration)
+                        .attrTween("text-anchor", function (d) {
+                            return function () {
+                                return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                            };
+                        })
+                        .attrTween("transform", function (d) {
+                            return function () {
+                                var value;
+                                var angle = 0;
+                                var modY = 1;
+                                if (d.depth) {
+                                    angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90
+                                    modY = getMod(d, true);
+                                }
+                                rotate = angle;
+                                value = "rotate(" + rotate + ")translate(" + (y(d.y) / modY + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                                return value;
+                            };
+                        })
+                        .style("fill-opacity", function (e) {
+                            //return isParentOf(d, e) ? 1 : 1e-6;
+                            if (isParentOf(d, e)) {
+                                e.visible = 1
+                                return 1;
+                            } else {
+                                e.visible = 0
+                                return 1e-6;
                             }
-                            rotate = angle;
-                            value = "rotate(" + rotate + ")translate(" + (y(d.y) / modY + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
-                            return value;
-                        };
-                    })
-                    .style("fill-opacity", function (e) {
-                        return isParentOf(d, e) ? 1 : 1e-6;
-                    })
-                    .each("end", function (e) {
-                        d3.select(this).style("svgibility", isParentOf(d, e) ? null : "hidden");
-                    });
-                nextStep(d);
-            }
+                        })
+                        .each("end", function (e) {
+                            d3.select(this).style("svgibility", isParentOf(d, e) ? null : "hidden");
+                        });
+                    nextStep(d);
+                }
+            }   
 
             function nextStep(d) {
                 if (d) {
