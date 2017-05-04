@@ -21,7 +21,7 @@ namespace Project.Models
             this.WordRelation = wordRel;
         }
 
-        public override string ToString()
+        public string ToJson()
         {
             return string.Format("{0} ({1}) {2}.", Word, SpeechPart, WordRelation.ToString().ToLower().Substring(0,3));
         }

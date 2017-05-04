@@ -21,10 +21,10 @@ namespace Project
 
             routes.MapRoute(
                 "SynonymLookup",
-                "Home/Search/{word}", new
+                "Home/Results/{word}", new
                 {
                     controller="Home",
-                    action ="Search",
+                    action ="Results",
                     word = UrlParameter.Optional
                 });
         }

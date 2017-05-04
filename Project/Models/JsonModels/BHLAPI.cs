@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Project.Models
+namespace Project.Models.JsonModels
 {
-    public class JsonModel
+    public class BHLAPI
     {
         public class Rootobject
         {
@@ -14,19 +14,19 @@ namespace Project.Models
             public Noun noun { get; set; }
             public Verb verb { get; set; }
         }
-        public class Adjective: SpeechComponent
-        { 
+        public class Adjective : SpeechComponent
+        {
             public override SpeechPart SpeechPart { get { return SpeechPart.Adjective; } }
         }
-        public class Adverb: SpeechComponent
+        public class Adverb : SpeechComponent
         {
             public override SpeechPart SpeechPart { get { return SpeechPart.Adverb; } }
         }
-        public class Verb: SpeechComponent
+        public class Verb : SpeechComponent
         {
             public override SpeechPart SpeechPart { get { return SpeechPart.Verb; } }
         }
-        public class Noun: SpeechComponent
+        public class Noun : SpeechComponent
         {
             public override SpeechPart SpeechPart { get { return SpeechPart.Noun; } }
         }

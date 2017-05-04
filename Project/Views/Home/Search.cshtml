@@ -4,25 +4,363 @@
     ViewBag.Title = "Search";
 }
 
-<h2>Results for @ViewData["Word"]</h2>
+<div id="output"></div>
 
-<p>
-    
-</p>
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.Word)
-        </th>
-        <th></th>
-    </tr>
+<style type="text/css">
+    path {
+        stroke: #fff;
+        stroke-width: 1;
+        cursor: pointer;
+    }
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.Word)
-        </td>
-    </tr>
-}
+    text {
+        font: bold 11px sans-serif;
+        cursor: pointer;
+    }
 
-</table>
+    body {
+        width: 1000px;
+        margin: 0 auto;
+    }
+
+    h1 {
+        text-align: center;
+        margin: .5em 0;
+    }
+
+    p#intro {
+        text-align: center;
+        margin: 1em 0;
+    }
+
+    #output {
+        display: block;
+        background-color: #F6FBFE;
+        margin-top: 12px;
+        padding: 36px;
+        width: 875px;
+        height: 850px;
+        border-color: black;
+        border-style: solid;
+        border-width: thin;
+    }
+
+    .mainItem {
+        font-size:larger;
+    }
+</style>
+<script src="http://d3js.org/d3.v3.js"></script>
+<script>
+    debugger
+    var searchWords = ['@ViewData["Word"]'];
+    var index = 0;
+    var currentItem = undefined;
+    var radials = [];
+
+    function getMod(d, inner) {
+        var mod = 1;
+        if (d && inner) {
+            switch (inner) {
+                case true:
+                    //var mod = Math.abs(-d.depth + 1 + 2);
+                    switch (d.depth) {
+                        case 0:
+                            mod = 1;
+                            break;
+                        case 1:
+                            mod = 2;
+                            break;
+                        case 2:
+                            mod = 1.5;
+                            break;
+                        case 3:
+                            mod = 1.25;
+                            break;
+                    }
+                    break;
+                case false:
+                    //var mod = Math.abs(3 - d.depth);
+
+                    switch (d.depth) {
+                        case 0:
+                            mod = 2;
+                            break;
+                        case 1:
+                            mod = 1.5;
+                            break;
+                        case 2:
+                            mod = 1.25;
+                            break;
+                        case 3:
+                            mod = 1;
+                            break;
+                    }
+                    break;
+            }
+        }
+        return mod;
+    }
+
+    function setData(data) {
+        currentItem = data;
+        refresh();
+    }
+    function refresh() {
+        if (currentItem) {
+            var words = []
+            for (i = 0; i < currentItem.children.length;i++) {
+                for (j = 0; j < currentItem.children[i].children.length; j++) {
+                    for (k = 0; k < currentItem.children[i].children[j].children.length; k++) {
+                        var child = currentItem.children[i].children[j].children[k]
+                        child.part = currentItem.children[i].name;
+                        child.rel = currentItem.children[i].children[j].name;
+                        words.push(child);
+                    }
+                }
+            }
+            refreshCarousel(words);
+        }
+    }
+    function refreshCarousel(words) {
+        var ol = document.createElement('ol')
+        ol.classList.add('car');
+        for (word in words) {
+            //<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+            var li = document.createElement('li');
+
+        }
+    }
+
+    function getSearchUrl(word) {
+        var root = '@Url.Action("JsonData", "Home")';
+        var append = "?Word="
+        var value = root + append + word;
+        return value;
+    }
+
+    function updateRadial() {
+        var div = d3.select("#output");
+
+        var width = 800,
+            height = 800,
+            radius = (Math.min(width, height) / 2) - 10,
+            x = d3.scale.linear().range([0, 2 * Math.PI]),
+            y = d3.scale.sqrt().range([0, radius]),
+            padding = 5,
+            duration = 2000;
+
+        var formatNumber = d3.format(",d");
+
+        var color = d3.scale.category20c();
+
+        var svg = div.append("svg")
+            .attr("width", width + padding * 2)
+            .attr("height", height + padding * 2)
+            .append("g")
+            .attr("transform", "translate(" + [radius + padding, radius + padding] + ")");
+        var partition = d3.layout.partition()
+            .sort(null)
+            .value(function (d) {
+                return 5.8 - d.depth;
+            });
+        var arc = d3.svg.arc()
+            .startAngle(function (d) {
+                var val = Math.max(0, Math.min(2 * Math.PI, x(d.x)));
+                //val /= getMod(d, true);
+                radials.push([d, "startAngle:" + val]);
+                //debugger
+                return val;
+            })
+            .endAngle(function (d) {
+                var val = Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx)));
+                //val /= getMod(d, false);
+                radials.push([d, "endAngle:" + val]);
+                //debugger
+                return val;
+            })
+            .innerRadius(function (d) {
+                var mod = getMod(d, true);
+                var val = Math.max(0, d.y ? y(d.y) : d.y);
+                val /= mod;
+                radials.push([d, "innerRadius:" + val]);
+                //debugger
+                return val;
+            })
+            .outerRadius(function (d) {
+                var mod = getMod(d, false);
+                var val = Math.max(0, y(d.y + d.dy) / mod);
+                val /= mod;
+                radials.push([d, "outerRadius:" + val]);
+                //debugger
+                return val;
+            });
+
+        //d3.json('@Url.Content("~/Content/_data.json")', function (error, root) {
+        d3.json(getSearchUrl(searchWords[index]), function (error, root) {
+            if (error) throw error;
+            setData(root);
+            
+            //svg.selectAll("path")
+            //    .data(partition.nodes(root))
+            //    .enter().append("path")
+            //    .attr("d", arc)
+            //    .style("fill", function (d) { return color((d.children ? d : d.parent).name); })
+            //    .on("click", click)
+            //    .append("title")
+            //    .text(function (d) { return d.name; });
+
+            var nodes = partition.nodes(root);
+            var path = svg.selectAll("path").data(nodes);
+            var text = svg.selectAll("text").data(nodes);
+
+            path.enter().append("path")
+                .attr("id", function (d, i) {
+                    return "path-" + i;
+                })
+                .attr("d", arc)
+                .style("fill", function (d) {
+                    d.colour = color((d.children ? d : d.parent).name); return d.colour;
+                })
+                .on("click", click);
+
+            var textEnter = text.enter().append("text")
+                .style("fill-opacity", 1)
+                .style("fill", function (d) {
+                    return brightness(d3.rgb(colour(d))) < 125 ? "#eee" : "#000";
+                })
+                .attr("text-anchor", function (d) {
+                    return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                })
+                .attr("dy", ".2em")
+                .attr("transform", function (d) {
+                    var value;
+                    var angle = 0;
+                    var modY = 1;
+                    if (d.depth) {
+                        angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90
+                        modY = getMod(d, true);
+                    }
+                    var rotate = angle;
+                    value = "rotate(" + rotate + ")translate(" + (y(d.y)/modY + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                    return value;
+                })
+                .on("click", click);
+           
+            textEnter.append("tspan")
+                .attr("x", 0)
+                .text(function (d) {
+                    return d.depth ? d.name : d.name ? d.name : "";
+                });
+            function click(d) {
+                //debugger
+                path.transition()
+                    .duration(duration)
+                    .attrTween("d", arcTween(d));
+                // Somewhat of a hack as we rely on arcTween updating the scales.
+                text.style("svgibility", function (e) {
+                    return isParentOf(d, e) ? null : d3.select(this).style("svgibility");
+                })
+                    .transition()
+                    .duration(duration)
+                    .attrTween("text-anchor", function (d) {
+                        return function () {
+                            return x(d.x + d.dx / 2) > Math.PI ? "end" : "start";
+                        };
+                    })
+                    .attrTween("transform", function (d) {
+                        return function () {
+                            var value;
+                            var angle=0;
+                            var modY=1;
+                            if (d.depth) {
+                                angle = x(d.x + d.dx / 2) * 180 / Math.PI - 90
+                                modY = getMod(d, true);
+                            }
+                            rotate = angle;
+                            value = "rotate(" + rotate + ")translate(" + (y(d.y) / modY + padding) + ")rotate(" + (angle > 90 ? -180 : 0) + ")";
+                            return value;
+                        };
+                    })
+                    .style("fill-opacity", function (e) {
+                        return isParentOf(d, e) ? 1 : 1e-6;
+                    })
+                    .each("end", function (e) {
+                        d3.select(this).style("svgibility", isParentOf(d, e) ? null : "hidden");
+                    });
+                nextStep(d);
+            }
+            
+            function nextStep(d) {
+                if (d) {
+                    if (d.isWord && d.isWord == true) {
+                        setTimeout(function () {
+                            $("#output").animate({ opacity: 0, duration: duration / 2 });
+                            setTimeout(function () {
+                                searchWords.push(d.name);
+                                index++;
+                                div = document.getElementById("output");
+                                div.innerHTML = "";
+                                updateRadial();
+                            }, duration / 2);
+                        }, duration)
+                    } else if (d.isOuterLevel && d.isOuterLevel == true && searchWords.length > 1) {
+                        setTimeout(function () {
+                            $("#output").animate({ opacity: 0, duration: 250 });
+                            setTimeout(function () {
+                                searchWords.splice(index, 1);
+                                index--;
+                                div = document.getElementById("output");
+                                div.innerHTML = "";
+                                updateRadial();
+                            }, 250);
+                        }, duration * (1 / 3))
+                    }
+                }
+            }
+            $("#output").animate({ opacity: 1, duration: duration / 2 });
+        });
+        
+        //d3.select(self.frameElement).style("height", height + "px");
+
+        function isParentOf(p, c) {
+            if (p === c) return true;
+            if (p.children) {
+                return p.children.some(function (d) {
+                    return isParentOf(d, c);
+                });
+            }
+            return false;
+        }
+        function colour(d) {
+            if (d.children) {
+                // There is a maximum of two children!
+                var colours = d.children.map(colour),
+                    a = d3.hsl(colours[0]),
+                    b = d3.hsl(colours[1]);
+                // L*a*b* might be better here...
+                return d3.hsl((a.h + b.h) / 2, a.s * 1.2, a.l / 1.2);
+            }
+            return d.colour || "#fff";
+        }
+        // Interpolate the scales!
+        function arcTween(d) {
+            var my = maxY(d),
+                xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+                yd = d3.interpolate(y.domain(), [d.y, my]),
+                yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+            return function (d) {
+                return function (t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+            };
+        }
+        function maxY(d) {
+            return d.children ? Math.max.apply(Math, d.children.map(maxY)) : d.y + d.dy;
+        }
+        // http://www.w3.org/WAI/ER/WD-AERT/#color-contrast
+        function brightness(rgb) {
+            return rgb.r * .299 + rgb.g * .587 + rgb.b * .114;
+        }
+    }
+
+    updateRadial();
+
+</script>

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using Project.Models;
+using Project.Models.JsonModels;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,27 +18,89 @@ namespace Project.Controllers
     {
         const String apiDomain = "http://words.bighugelabs.com/";
         String apiQuery { get { return "api/2/" + ConfigurationManager.AppSettings["APIKey"] + "/{0}/json"; } }
-        
+
+        static Dictionary<String,Entry> Entries { get { return _Entries; } }
+        static Dictionary<String, Entry> _Entries = new Dictionary<string, Entry>();
+
+        [NonAction]
+        void addItems(List<Entry> Items)
+        {
+            if (Items!=null)
+            {
+                foreach (Entry Item in Items)
+                {
+                    addItem(Item);
+                }
+            }
+        }
+        [NonAction]
+        void addItem(Entry Item)
+        {
+            if (Item!=null)
+            {
+                if(!Entries.ContainsKey(Item.Item.Word))
+                {
+                    Entries.Add(Item.Item.Word, Item);
+                } else
+                {
+                    Entries[Item.Item.Word].Merge(Item);
+                }
+            }
+        }
+
         // GET: Home
         public ActionResult Index()
         {
             return View();
         }
+
         [ActionName("Search")]
         public ActionResult getSynonyms(String Word)
         {
             ViewData["Word"] = Word;
-            //List<Synonym> values = new List<Synonym>();
-            var data = getWebData(apiDomain + string.Format(apiQuery, Word));
-            var dataObject = parseWebString(data);
-            var items = parseDataObject(dataObject);
 
-            //string outputValue = string.Join<ThesaurusItem>(",<br />", items.ToArray());
-            return View(items);
+            return View();
+        }
+
+        [ActionName("JsonData")]
+        public String GetJsonData(String Word)
+        {
+            String value = "{ }";
+        
+            if (Entries.ContainsKey(Word))
+            {
+                value = Entries[Word].ToJson();
+            } else
+            {
+                Entry entry = null;
+
+                var item = new ThesaurusItem(Word, SpeechPart.None, WordRel.None);
+                var data = getWebData(apiDomain + string.Format(apiQuery, Word));
+                var dataObject = parseWebString(data);
+                var items = parseDataObject(dataObject);
+                entry = new Entry(item, items);
+                addItem(entry);
+
+                value = entry.ToJson();
+            }
+
+            return value;
+        }
+
+        public ActionResult Test(String Word)
+        {
+            ViewData["Word"] = Word;
+
+            return View();
+        }
+        
+        public ActionResult DataTest()
+        {
+            return View();
         }
 
         [NonAction]
-        public List<ThesaurusItem> parseDataObject(JsonModel.Rootobject dataObject)
+        public List<ThesaurusItem> parseDataObject(BHLAPI.Rootobject dataObject)
         {
             List<ThesaurusItem> values = new List<ThesaurusItem>();
 
@@ -51,6 +114,7 @@ namespace Project.Controllers
 
             return values;
         }
+        [NonAction]
         private List<ThesaurusItem> parseDataObjectComponents(SpeechComponent component)
         {
             List<ThesaurusItem> values = new List<ThesaurusItem>();
@@ -65,6 +129,7 @@ namespace Project.Controllers
 
             return values;
         }
+        [NonAction]
         private List<ThesaurusItem> parseComponentItems(String[] words, SpeechPart speechPart, WordRel wordRel)
         {
             List<ThesaurusItem> values = new List<ThesaurusItem>();
@@ -80,21 +145,42 @@ namespace Project.Controllers
             return values;
         }
 
-
         [NonAction]
-        public JsonModel.Rootobject parseWebString(String data)
+        public BHLAPI.Rootobject parseWebString(String data)
         {
-            JsonModel.Rootobject value = null;
+            BHLAPI.Rootobject value = null;
 
             if (!string.IsNullOrEmpty(data))
             {
                 try
                 {
-                    value = JsonConvert.DeserializeObject<JsonModel.Rootobject>(data);
+                    value = JsonConvert.DeserializeObject<BHLAPI.Rootobject>(data);
                 }
                 catch (Exception ex)
                 {
                     if (ex!=null)
+                    {
+
+                    }
+                }
+            }
+
+            return value;
+        }
+        [NonAction]
+        public WAPI.Rootobject parseAltString(String data)
+        {
+            WAPI.Rootobject value = null;
+
+            if (!string.IsNullOrEmpty(data))
+            {
+                try
+                {
+                    value = JsonConvert.DeserializeObject<WAPI.Rootobject>(data);
+                }
+                catch (Exception ex)
+                {
+                    if (ex != null)
                     {
 
                     }

@@ -69,7 +69,7 @@ var
 	core_indexOf = core_deletedIds.indexOf,
 	core_toString = class2type.toString,
 	core_hasOwn = class2type.hasOwnProperty,
-	core_trim = core_version.trim,
+    core_trim = core_version.trim,
 
 	// Define a local copy of jQuery
 	jQuery = function( selector, context ) {
