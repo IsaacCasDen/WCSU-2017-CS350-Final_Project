@@ -5,7 +5,7 @@
 
 <div id="divSearch">
     <h3><label class="label label-primary">Search for Connections</label></h3>
-    <input id="inputSearch" type="search" class="input-lg" />
+    <input id="inputSearch" type="search" class="input-lg" onkeypress= "return enterRunSearch()" />
     <button id="buttonRunSearch" class="btn btn-default">Go</button>
 </div>
 <script type="text/javascript">
@@ -14,23 +14,18 @@
         if (button) {
             button.onclick = runSearch;
         }
-        //try {
-        //    $("#divSearch").css('display', 'none');
-        //    $("#divSearch").fadeIn(1000);
-        //} catch (e) {
-        //    if (e) {
-
-        //    }
-        //}
     }
     function runSearch() {
         var search = document.getElementById('inputSearch');
         if (search) {
             var term = search.value;
-            //var url = '@Url.Action("Test","Home")?Word=' + term;
             var url = '@Url.Action("Search","Home")?Word=' + term;
-            //var url = '@Url.Action("Results","Home")?Word=' + term;
             location.href = url;
         }
     }
+    function enterRunSearch() {
+        if (event.which == 13 || event.keyCode == 13) {
+            runSearch();
+        }
+    };
 </script>
