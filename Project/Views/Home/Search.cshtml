@@ -4,8 +4,10 @@
     ViewBag.Title = "Search";
 }
 
-<div id="output"></div>
-
+<div id="display">
+    <div id="output"></div>
+    <div id="carousel"></div>
+</div>
 <style type="text/css">
     path {
         stroke: #fff;
@@ -18,11 +20,6 @@
         cursor: pointer;
     }
 
-    body {
-        width: 1000px;
-        margin: 0 auto;
-    }
-
     h1 {
         text-align: center;
         margin: .5em 0;
@@ -33,16 +30,35 @@
         margin: 1em 0;
     }
 
-    #output {
-        display: block;
-        background-color: #F6FBFE;
+    #display {
+        display:inline-block;
+        height: 875px;
+        width:100%;
         margin-top: 12px;
-        padding: 36px;
+        padding: 12px;
+    }
+
+    #output {
+        display: inline-block;
+        float:left;
+        background-color: #F6FBFE;
         width: 875px;
-        height: 850px;
         border-color: black;
         border-style: solid;
         border-width: thin;
+    }
+
+    #carousel {
+        border-color: black;
+        border-style: solid;
+        border-width: thin;
+        display: inline-block;
+        float: right;
+        max-height: 816px;
+        overflow-y: scroll;
+    }
+
+    #carousel ol li {
     }
 
     .mainItem {
@@ -51,7 +67,7 @@
 </style>
 <script src="http://d3js.org/d3.v3.js"></script>
 <script>
-    debugger
+    //debugger
     var searchWords = ['@ViewData["Word"]'];
     var index = 0;
     var currentItem = undefined;
@@ -107,28 +123,48 @@
     }
     function refresh() {
         if (currentItem) {
-            var words = []
-            for (i = 0; i < currentItem.children.length;i++) {
+            //debugger
+            var items = []
+
+            document.getElementById("carousel").innerHTML = "";
+            for (i = 0; i < currentItem.children.length; i++) {
+                var pdiv = document.createElement('div');
+                pdiv.classList.add('panel-group');
+                var bdiv = document.createElement('div');
+                bdiv.classList.add('panel');
+                bdiv.classList.add('panel-default');
+                var p1 = document.createElement('p');
+                p1.innerHTML = currentItem.children[i].name;
+                p1.classList.add('list-group-item');
+                p1.classList.add('list-group-item-success');
+                bdiv.appendChild(p1);
                 for (j = 0; j < currentItem.children[i].children.length; j++) {
+                    var ol = document.createElement('ol')
+                    ol.classList.add('list-group');
+                    var p2 = document.createElement('p');
+                    p2.innerHTML = currentItem.children[i].children[j].name;
+                    p2.classList.add('list-group-item');
+                    p2.classList.add('list-group-item-info');
+                    bdiv.appendChild(p2);
                     for (k = 0; k < currentItem.children[i].children[j].children.length; k++) {
                         var child = currentItem.children[i].children[j].children[k]
-                        child.part = currentItem.children[i].name;
-                        child.rel = currentItem.children[i].children[j].name;
-                        words.push(child);
+                        var li = document.createElement('li');
+                        li.innerHTML = child.name;
+                        li.classList.add('list-group-item');
+                        ol.appendChild(li);
+
                     }
+                    bdiv.appendChild(ol);
                 }
+                pdiv.appendChild(bdiv);
+                document.getElementById("carousel").appendChild(pdiv);
             }
-            refreshCarousel(words);
+            
         }
     }
     function refreshCarousel(words) {
-        var ol = document.createElement('ol')
-        ol.classList.add('car');
-        for (word in words) {
-            //<li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-            var li = document.createElement('li');
-
-        }
+        
+        
     }
 
     function getSearchUrl(word) {

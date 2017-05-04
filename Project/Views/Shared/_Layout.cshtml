@@ -27,12 +27,16 @@
     </div>
 
     <div class="container body-content">
-        @RenderBody()
-        <hr />
-        <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
-        </footer>
+        <div>
+            @RenderBody()
+            <footer id="footer">
+                <hr />
+                <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            </footer>
+        </div>
+        
     </div>
+    
 
     <script src="~/Scripts/jquery-1.10.2.js">
         

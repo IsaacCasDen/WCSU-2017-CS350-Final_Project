@@ -5,8 +5,15 @@
 
 /* Set padding to keep content from hitting the edges */
 .body-content {
-    padding-left: 15px;
-    padding-right: 15px;
+    
+}
+
+#footer {
+    clear: both;
+    position: relative;
+    z-index: 10;
+    height: 3em;
+    margin-top: -3em;
 }
 
 /* Set width on the form input elements since they're 100% wide by default */
@@ -24,14 +31,7 @@ textarea {
 }
 
 .centerItem {
-    display:inline-block;
-    position:fixed;
-    z-index:100;
-    top:50%;
-    left:50%;
-    margin:-100px 0 0 -100px;
-    width:200px;
-    height:200px;
+    
 }
 
 .hidden {
